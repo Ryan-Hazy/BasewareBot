@@ -1,0 +1,203 @@
+'''
+INSTRUCTIONS
+
+1. update the basware file
+2. copy the file then paste it into the downloads section
+3. once it is in the downloads section find the name of the file and change the file names in the program to match it lines 111, 126, and 132
+4. look at the columns in the baseware file for each tab and make sure they are the same (cost center is line 114, Project 2 is line 127, and project is
+line 133
+5. then change the fname variable to whatever you want the file name to be line 56
+6. right click on the tab that you are on and click Run'baswaretogether'
+
+While program is running
+
+7. you will be prompted to approve sign in on your authenticator app. You have 20 sec to do so
+
+
+Once program is done
+
+9. once the program is finished you will see "process finished with exit code 0"  your files will be to the left and you will need to click them
+in order to open them
+10. copy and paste the data from the output files into the basware file
+11. if the status is "removed" then you have to go back and manually get the status
+11. save the file and cut it out of downloads then file then paste it back into the basware section and click replace file
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+COMMON ERRORS
+
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\hazyr\\Downloads\\Basware 6.20.22.xlsx'
+(this means that you did not put the file in the downloads area or you did not change the file name)
+
+ValueError: Length mismatch: Expected axis has 9 elements, new values have 10 elements
+(this means that there is more columns in the excel sheet then you put in the program. sometimes these columns are hidden in the sheet so you will
+just have to add or subtract the correct amount of columns. if it is a hidden one put it after 'S' if it is in the table put in the correct order)
+
+
+Session count exceeded
+(you can only log into basware 3 times in 15 min. so wait 15 min then try again)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'''
+
+# import is importing different libraries that are used within the program
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+import time
+import operator
+import pyautogui
+
+# ini (invoice number index) moves through the invoices
+ini=0
+# fname (file name) is the base name for the file different things get added to it depending on what is being processed
+fname = 'Basware6232022.xlsx'
+
+# This is the file location of the chrome web driver
+s = Service('C:\Program Files (x86)\chromedriver.exe')
+#This defines the webdriver
+driver = webdriver.Chrome(service=s)
+
+# driver.get is the driver going to the website
+driver.get("https://kiongroup.p2p.basware.com/Portal/WifLogin/Default.aspx?tz=120&amp;ln=en-US&amp;lnf=en-US&amp;returnUrl=%2fedge%2f")
+
+# the time.sleep() is telling the computer to pause the program so things can load. The number inside the parenthesis is the seconds it waits
+time.sleep(5)
+
+# driver.find_element() is the web driver finding the part of the website in which it interacts with and sets it to the variable email
+email = driver.find_element(By.ID,"i0116")
+
+# send_keys is the program typing
+# also this is needs to be your own email for the dematic single sign on
+email.send_keys("ryan.hazy@dematic.com")
+
+email.send_keys(Keys.RETURN)
+time.sleep(3)
+pswd = driver.find_element(By.ID,"i0118")
+
+# this is your password for your dematic single sign on
+pswd.send_keys(**********)
+
+time.sleep(3)
+pswd.send_keys(Keys.RETURN)
+time.sleep(20)
+yes = driver.find_element(By.ID, "idSIButton9")
+yes.send_keys(Keys.RETURN)
+time.sleep(5)
+
+driver.get("https://kiongroup.p2p.basware.com/edge/#/documentsearch/_2Fedge_2Fpersonal_2Fapi_2Finvoicesearch")
+
+time.sleep(4)
+
+allinv= driver.find_element(By.XPATH, '//*[@id="select-mytasks"]/label[2]/input')
+
+# .click() means the driver clicks the element
+allinv.click()
+
+dat = driver.find_element(By.XPATH, '/html/body/div/bw-search-invoice/div/div/form/div[1]/div[2]/div/div/pal-date-range-picker/div/div/div[1]/div[1]/pal-date-picker/div/div/input')
+dat.send_keys(Keys.CONTROL, "a")
+dat.send_keys(Keys.BACKSPACE)
+# qn is the number that keeps track of what tab the program is running
+qn = 2
+
+# This for loop runs the status checker 3 times for 3 tabs
+for q in range(3):
+    # it is import that the program resest ini back to 0 because this will ensure that the program reads from the top of invoice list on each tab
+    ini = 0
+
+    # This if statement asks what tab you are on so it can give the computer the correct information
+    if qn == 0:
+
+        # here we are loading in all of the data from the excel sheet to the python program into what is called a data frame. All dataframes will be called cost center no matter the tab it is on
+        costcenter = pd.read_excel(r"C:\Users\hazyr\Downloads\Basware 6.23.22.xlsx", sheet_name="Cost Center")
+
+        # we are creating names for the columns here and defining how many columns there will be
+        cccolumns = ['D', 'CCC', 'CCN', 'IN', 'SN', 'ON', 'AR', 'IT','IW', 'GT', 'S','b', 'B']
+
+        # here we make the columns in the data fram
+        costcenter.columns = cccolumns
+
+        # this ensures that the data frame we created is actually in data frame type
+        costcenters = pd.DataFrame(costcenter)
+
+        # this is the variable that names the output file it adds from that base we defined earlier
+        rfname = "cc" + fname
+
+    if qn == 1:
+        costcenter = pd.read_excel(r"C:\Users\hazyr\Downloads\Basware 6.23.22.xlsx", sheet_name="Network")
+        cccolumns = ['D', 'NI', 'PN', 'IN', 'SN', 'ON', 'AR','IM', 'IT','IW', 'GT', 'S']
+        costcenter.columns = cccolumns
+        costcenters = pd.DataFrame(costcenter)
+        rfname = "N" + fname
+    if qn == 2:
+        costcenter = pd.read_excel(r"C:\Users\hazyr\Downloads\Basware 6.23.22.xlsx", sheet_name="WBS")
+        cccolumns = ['D', 'WL', 'PN', 'IN', 'SN', 'ON', 'AR','IM','IT','IW','GT','b', 'S']
+        costcenter.columns = cccolumns
+        costcenters = pd.DataFrame(costcenter)
+        rfname = "WBS"+ fname
+
+    # ccinv (coste center invoices) this is creating a lsit of the invoice numbers
+    ccinv = costcenter['IN'].apply(str)
+
+    # len (length) this determines the length of the invoice numbers list this we will use to see how many invoice numbers the computer needs to run
+    len = operator.length_hint(ccinv)
+
+    # sup (supplier name) makes the list of supplier names
+    sup = costcenter['SN'].apply(str)
+
+    # this loop is when the program types the invoice numbers into the website it uses the length that we defined earlier to determine how many times to run
+    for i in range(len):
+
+        # try means that it is the first thing the program attempts. If an error occurs the program will do what is under the except area
+        try:
+            # invnum (invoice number) this pulls the invoice number out of the list we made and uses ini to determine the correct one
+            invnum = str(ccinv.iloc[ini])
+            invn = driver.find_element(By.CSS_SELECTOR, '#searchForm > div.search-field-row.invoice-search-panels > span:nth-child(1) > bw-search-field > div > div > div > input')
+
+            # this loop just hits backspace a bunch
+            for i in range(20):
+                invn.send_keys(Keys.BACKSPACE)
+            invn.send_keys(invnum)
+
+            # sname (supplier name) This pulls the supplier name from the list
+            sname = str(sup.iloc[ini])
+            supnam = driver.find_element(By.XPATH, '/html/body/div/bw-search-invoice/div/div/form/div[2]/span[2]/bw-search-field/div/div/div/input')
+            for i in range (40):
+                supnam.send_keys(Keys.BACKSPACE)
+            supnam.send_keys(sname)
+
+            srch = invn = driver.find_element(By.CSS_SELECTOR, '#searchForm > div:nth-child(4) > div.search-buttons > button.btn.btn-pal-action-button.ng-scope')
+            srch.click()
+            time.sleep(3)
+
+            stus = driver.find_element(By.XPATH,'/html/body/div/bw-search-invoice/div/div[2]/bw-search-invoice-results/div/div[2]/bw-search-results-grid/pal-catalog/div[1]/div/pal-catalog-list/div/div[2]/pal-catalog-items/pal-catalog-item/div/div/div[2]')
+
+            # this sets the status that was found in the site to the status variable in the program
+            status = stus.text
+
+            # this writes the status into the costcenter dataframe
+            costcenter.at[ini,'S'] = status
+            invn = driver.find_element(By.CSS_SELECTOR, '#searchForm > div.search-field-row.invoice-search-panels > span:nth-child(1) > bw-search-field > div > div > div > input')
+
+            # this moves the index number up one so we can move down the list and get the next invoice number and supplier name
+            ini = ini + 1
+
+        # this excepts is when an error occurs which is when a non invoice number is entered or the invoice is not found
+        except:
+            costcenter.at[ini,'S'] = ''
+            ini=ini+1
+
+
+    # this is creating a new excel sheet
+    writer = pd.ExcelWriter(rfname)
+
+    # this is plugging in the dataframe into the excel sheet
+    costcenter.to_excel(writer)
+
+    # here the program is closing and saving the sheet
+    writer.save()
+
+    # this one moves up the tab the program is working on
+    qn = qn+1
