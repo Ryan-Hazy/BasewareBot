@@ -52,8 +52,10 @@ import pyautogui
 
 # ini (invoice number index) moves through the invoices
 ini=0
+
+uiname = input("What would you like to name the file? ")
 # fname (file name) is the base name for the file different things get added to it depending on what is being processed
-fname = 'Basware6232022.xlsx'
+fname = uiname + ".xlsx"
 
 # This is the file location of the chrome web driver
 s = Service('C:\Program Files (x86)\chromedriver.exe')
@@ -100,7 +102,10 @@ dat = driver.find_element(By.XPATH, '/html/body/div/bw-search-invoice/div/div/fo
 dat.send_keys(Keys.CONTROL, "a")
 dat.send_keys(Keys.BACKSPACE)
 # qn is the number that keeps track of what tab the program is running
-qn = 2
+qn = 0
+
+# this is creating a new excel book
+writer = pd.ExcelWriter(fname)
 
 # This for loop runs the status checker 3 times for 3 tabs
 for q in range(3):
@@ -122,21 +127,21 @@ for q in range(3):
         # this ensures that the data frame we created is actually in data frame type
         costcenters = pd.DataFrame(costcenter)
 
-        # this is the variable that names the output file it adds from that base we defined earlier
-        rfname = "cc" + fname
+        # this is the variable that names the tab of the excel book
+        tabname = "Cost Center"
 
     if qn == 1:
         costcenter = pd.read_excel(r"C:\Users\hazyr\Downloads\Basware 6.23.22.xlsx", sheet_name="Network")
         cccolumns = ['D', 'NI', 'PN', 'IN', 'SN', 'ON', 'AR','IM', 'IT','IW', 'GT', 'S']
         costcenter.columns = cccolumns
         costcenters = pd.DataFrame(costcenter)
-        rfname = "N" + fname
+        tabname = "Network"
     if qn == 2:
         costcenter = pd.read_excel(r"C:\Users\hazyr\Downloads\Basware 6.23.22.xlsx", sheet_name="WBS")
         cccolumns = ['D', 'WL', 'PN', 'IN', 'SN', 'ON', 'AR','IM','IT','IW','GT','b', 'S']
         costcenter.columns = cccolumns
         costcenters = pd.DataFrame(costcenter)
-        rfname = "WBS"+ fname
+        tabname = "WBS"
 
     # ccinv (coste center invoices) this is creating a lsit of the invoice numbers
     ccinv = costcenter['IN'].apply(str)
@@ -190,14 +195,15 @@ for q in range(3):
             ini=ini+1
 
 
-    # this is creating a new excel sheet
-    writer = pd.ExcelWriter(rfname)
 
     # this is plugging in the dataframe into the excel sheet
-    costcenter.to_excel(writer)
+    costcenter.to_excel(writer, sheet_name= tabname)
 
-    # here the program is closing and saving the sheet
+    # this saves the book
     writer.save()
 
     # this one moves up the tab the program is working on
     qn = qn+1
+
+#this closes the book
+writer.close()
